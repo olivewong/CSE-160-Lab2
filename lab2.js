@@ -3,9 +3,10 @@
 
 // Vertex shader program
 const VSHADER_SOURCE =
-  `attribute vec4 a_Position;
+  `attribute vec3 a_Position;
+  uniform mat4 u_modelMatrix;
   void main() {
-    gl_Position = a_Position;
+    gl_Position = u_modelMatrix * vec4(a_Position, 1.0);
   }`;
 
 // Fragment shader program
@@ -82,19 +83,23 @@ setDrawingMode = (shape_type) => {
   // Called on button clicks
   mode = shape_type;
 }
-
+const {gl, canvas} = setUpWebGL();
+let {a_Position, u_FragColor} = connectVariablesToGLSL(gl);
 main = () => {
-  const {gl, canvas} = setUpWebGL();
-  let {a_Position, u_FragColor} = connectVariablesToGLSL(gl);
+  
+  
   //let vertexBuffer = initVertexBuffer(gl);
   shapesList = []
   // Register function (event handler) to be called on a mouse press
   canvas.onmousedown = (ev) => { 
-    click(ev, canvas) 
-    renderAllShapes(a_Position, u_FragColor, gl)
+    click(ev, canvas);
+    renderAllShapes(a_Position, u_FragColor, gl);
   };
+
   // Clear <canvas>
   gl.clear(gl.COLOR_BUFFER_BIT);
+  //debugger;
+  update(a_Position, u_FragColor, gl);
 }
 
 clearCanvas = () => {
@@ -107,16 +112,48 @@ clearCanvas = () => {
   shapesList = [];
   
 }
+let rotationZ = 0;
+
+update = () => {
+  rotationZ += 1;
+  
+  renderAllShapes(a_Position, u_FragColor, gl);
+  requestAnimationFrame(update);
+}
 
 renderAllShapes = (a_Position, u_FragColor, gl) => {
   // Clear <canvas>
-  gl.clear(gl.COLOR_BUFFER_BIT);
-
+  try {
+    gl.clear(gl.COLOR_BUFFER_BIT);
+  } catch (e) {
+    debugger;
+  }
+  
   // todo make render method
   shapesList.forEach((s) => {
     initVertexBuffer(gl, s.vertices, a_Position);
     // Pass the color of a point to u_FragColor variable
     gl.uniform4f(u_FragColor, ...s.color);
+
+    let u_modelMatrix = gl.getUniformLocation(gl.program, 'u_modelMatrix');
+
+    let modelMatrix = new Matrix4();
+
+    let rotationMatrix = new Matrix4();
+    rotationMatrix.setRotate(rotationZ, 0, 0, 1)
+
+    let scaleMatrix = new Matrix4();
+    scaleMatrix.setScale(0.5, 0.5, 0.5);
+
+    let translationMatrix = new Matrix4();
+    translationMatrix.setTranslate(0.5, 0, 0);
+    
+    // M = translate * rotate * scale (must follow order, rotate and scale must be done in center, reverse order?)
+    modelMatrix.multiply(translationMatrix);
+    modelMatrix.multiply(rotationMatrix);
+    modelMatrix.multiply(scaleMatrix);
+
+    gl.uniformMatrix4fv(u_modelMatrix, false, modelMatrix.elements);
     // Draw
     gl.drawArrays(gl.TRIANGLES, 0, s.vertices.length / 2);
   })
