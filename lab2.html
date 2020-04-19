@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Change a point color</title>
+  </head>
+
+  <body onload="main()" style="cursor: url('data:image/x-icon;base64,AAACAAEAICACAA8AFQAwAQAAFgAAACgAAAAgAAAAQAAAAAEAAQAAAAAAgAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAA////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAFAAAABUAAAAAAAAAHwAAAAAAAAAfAAAADgAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA///////////////////////////////////////////////////////wH///8B////Af///wH///8B////Af///wH///8B////g////8f////H////x////8f////H////x////+//////////////////////////////////8='), auto;">
+    <canvas id="webgl" width="400" height="400">
+      Please use a browser that supports "canvas"
+    </canvas>
+    <br />
+    <button onclick="clearCanvas();">Clear Canvas</button>
+    <br />
+    <br />
+
+    Drawing Mode:<br />
+    <button onclick="setDrawingMode('square');">Squares</button>
+    <button onclick="setDrawingMode('triangle');">Triangles</button>
+    <button onclick="setDrawingMode('circle');">Circles</button>
+    <button onclick="setDrawingMode('chaos');">Chaos</button>
+    <br /><br />
+
+    Shape Color:<br />
+    <label for="red">Red</label>
+    <input type="range" min="0" max="100" value="75" class="slider" id="red">
+    <label for="green">Green</label>
+    <input type="range" min="0" max="100" value="20" class="slider" id="green">
+    <br />
+    <label for="blue">Blue</label>
+    <input type="range" min="0" max="100" value="50" class="slider" id="blue">
+    <label for="alpha">Lightness</label>
+    <input type="range" min="0" max="100" value="25"class="slider" id="alpha">
+    <br /><br />
+
+    <label for="size">Shape Size:</label>
+    <input type="range" min="1" max="15" value="5" class="slider" id="size">
+    <label for="segments">(Circles) Segment Count:</label>
+    <input type="range" min="4" max="50" value="35" class="slider" id="segments">
+    <br />
+    <br />
+    
+    <script src="./lib/webgl-utils.js"></script>
+    <script src="./lib/webgl-debug.js"></script>
+    <script src="./lib/cuon-utils.js"></script>
+    <script src="./Shape.js"></script>
+    <script src="Lab1.js"></script>
+  </body>
+</html>
