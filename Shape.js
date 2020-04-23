@@ -1,78 +1,71 @@
+const pink = [0.9, 0.0, 0.5, 1.0]
+
 class Shape {
-  constructor(shape_type, color, size, pos, numTriangles) {
-    this.shape_type = shape_type;
+  constructor(vertices, pos, radius=0.5, color=pink) {
     this.color = color;
-    this.size = size;
+    this.radius = radius;
     this.pos = pos;
-    this.numTriangles = numTriangles;
-    this.initVertices(shape_type);
+    this.vertices = vertices;
+    this.normalizeVertices();
+
+    // Model matrix stores all the scale/translation/rotation transformations
+    this.translationMatrix = new Matrix4();
+    this.rotationMatrix = new Matrix4();
+    this.scaleMatrix = new Matrix4();
   }
 
-  normalizeVertices = () => {
-    this.vertices.forEach((val, idx) => {
-      // Value * size + where user clicked
-      this.vertices[idx] = val * this.size + (idx % 2 == 0 ? this.pos[0]: this.pos[1]);
-    });
+  get modelMatrix() {
+    // M = Translate x Rotate x Scale
+    let M = new Matrix4();
+    M.multiply(this.translationMatrix);
+    M.multiply(this.rotationMatrix);
+    M.multiply(this.scaleMatrix);
+    return M;
   }
-  initVertices = (shape_type) => {
-    let alpha, radius, idx;
-    switch (shape_type) {
-      case 'triangle':
-        this.vertices = new Float32Array([
-          0.0, 0.5,  -0.5, -0.5,  0.5, -0.5
-        ]);
-        break;
-      case 'square':
-        this.vertices = new Float32Array([
-          -0.5, -0.5,  -0.5, 0.5,  0.5, 0.5,
-          0.5, -0.5, -0.5, -0.5, 0.5, 0.5
-        ]);
-        break;
-      case 'circle':
-        this.vertices = new Float32Array(6 * this.numTriangles);
-        alpha = (2.0 * Math.PI) / this.numTriangles; // Radians
-        radius = 0.5;
-        idx = 0;
-        for (let ang = 0; idx < this.vertices.length; ang += alpha) {
-          this.vertices.set([
-            0.0, 0.0,
-            Math.cos(ang) * radius, Math.sin(ang) * radius,  
-            Math.cos(ang + alpha) * radius, Math.sin(ang + alpha) * radius, 
-          ], idx);
-          idx += 6;
-        }
-        break;
-      case 'chaos':
-        this.vertices = new Float32Array(3 * this.numTriangles);
-        alpha = (2.0 * Math.PI) / this.numTriangles; // Radians
-        radius = Math.random() + Math.random() - 0.5;
-        idx = 0;
-        for (let ang = 0; ang < (2.0 * Math.PI - alpha); ang += alpha) {
-          this.vertices.set([
-            0.0 + Math.random(), 0.0 + Math.random(),
-            Math.cos(ang) * radius + Math.random(), Math.sin(Math.random()) * radius * Math.random(),
-            Math.cos(ang + alpha - Math.random()) + Math.random(), Math.sin(ang + alpha) + Math.random()
-          ], idx);
-          idx += 3;
-        }
-        break;
-      default:
-        throw 'initVertices: not a valid shape';
-    }
-    
+
+  translate(x, y, z) {
+    this.translationMatrix.setTranslate(x, y, z);
+  }
+
+  scale(x, y, z) {
+    this.scaleMatrix.setScale(x, y, z);
+  }
+
+  rotateX(angle) {
+    this.rotationMatrix.setRotate(angle, 1, 0, 0);
+  }
+
+  rotateY(angle) {
+    this.rotationMatrix.setRotate(angle, 0, 1, 0);
+  }
+
+  rotateZ(angle) {
+    this.rotationMatrix.setRotate(angle, 0, 0, 1);
+  }
+
+  normalizeVertices(r = this.radius) {
     this.vertices.forEach((val, idx) => {
-      // Value * size + where user clicked
-      this.vertices[idx] = val * this.size + (idx % 2 == 0 ? this.pos[0]: this.pos[1]);
+      // Value * radius + where user clicked
+      this.vertices[idx] = val * r + (idx % 2 == 0 ? this.pos[0]: this.pos[1]);
     });
   }
 }
 
 class Triangle extends Shape {
-  constructor() {
-    super();
-    this.vertices = new Float32Array([
+  constructor(pos, radius=0.5, color=pink) {
+    let vertices = new Float32Array([
       0.0, 0.5,  -0.5, -0.5,  0.5, -0.5
     ]);
-    this.normalizeVertices();
+    super(vertices, pos, radius=0.5, color=pink);
+  }
+};
+
+class Square extends Shape {
+  constructor(pos, radius=0.5, color=pink) {
+    let vertices = new Float32Array([
+      -0.5, -0.5,  -0.5, 0.5,  0.5, 0.5,
+      0.5, -0.5, -0.5, -0.5, 0.5, 0.5
+    ]);
+    super(vertices, pos, radius=0.5, color=pink);
   }
 };

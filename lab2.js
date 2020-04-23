@@ -77,17 +77,11 @@ initVertexBuffer = (gl, vertices, a_Position) => {
 }
 
 var shapesList = [];
-var mode = 'triangle';
 
-setDrawingMode = (shape_type) => {
-  // Called on button clicks
-  mode = shape_type;
-}
 const {gl, canvas} = setUpWebGL();
 let {a_Position, u_FragColor} = connectVariablesToGLSL(gl);
+
 main = () => {
-  
-  
   //let vertexBuffer = initVertexBuffer(gl);
   shapesList = []
   // Register function (event handler) to be called on a mouse press
@@ -98,7 +92,6 @@ main = () => {
 
   // Clear <canvas>
   gl.clear(gl.COLOR_BUFFER_BIT);
-  //debugger;
   update(a_Position, u_FragColor, gl);
 }
 
@@ -110,13 +103,12 @@ clearCanvas = () => {
   // Clear <canvas>
   gl.clear(gl.COLOR_BUFFER_BIT);
   shapesList = [];
-  
 }
+
 let rotationZ = 0;
 
 update = () => {
   rotationZ += 1;
-  
   renderAllShapes(a_Position, u_FragColor, gl);
   requestAnimationFrame(update);
 }
@@ -128,32 +120,19 @@ renderAllShapes = (a_Position, u_FragColor, gl) => {
   } catch (e) {
     debugger;
   }
+  let u_modelMatrix = gl.getUniformLocation(gl.program, 'u_modelMatrix');
   
   // todo make render method
   shapesList.forEach((s) => {
     initVertexBuffer(gl, s.vertices, a_Position);
     // Pass the color of a point to u_FragColor variable
     gl.uniform4f(u_FragColor, ...s.color);
-
-    let u_modelMatrix = gl.getUniformLocation(gl.program, 'u_modelMatrix');
-
-    let modelMatrix = new Matrix4();
-
-    let rotationMatrix = new Matrix4();
-    rotationMatrix.setRotate(rotationZ, 0, 0, 1)
-
-    let scaleMatrix = new Matrix4();
-    scaleMatrix.setScale(0.5, 0.5, 0.5);
-
-    let translationMatrix = new Matrix4();
-    translationMatrix.setTranslate(0.5, 0, 0);
     
-    // M = translate * rotate * scale (must follow order, rotate and scale must be done in center, reverse order?)
-    modelMatrix.multiply(translationMatrix);
-    modelMatrix.multiply(rotationMatrix);
-    modelMatrix.multiply(scaleMatrix);
+    s.rotateZ(rotationZ);
+    s.scale(0.5, 0.5, 0.5);
+    s.translate(0.5, 0, 0);
 
-    gl.uniformMatrix4fv(u_modelMatrix, false, modelMatrix.elements);
+    gl.uniformMatrix4fv(u_modelMatrix, false, s.modelMatrix.elements);
     // Draw
     gl.drawArrays(gl.TRIANGLES, 0, s.vertices.length / 2);
   })
@@ -169,20 +148,8 @@ click = (ev, canvas) => {
   x = ((x - rect.left) - canvas.width / 2) / (canvas.width / 2);
   y = (canvas.height / 2 - (y - rect.top)) / (canvas.height / 2);
 
-  const color = [
-    document.getElementById("red").value / 100.0,
-    document.getElementById("green").value / 100.0,
-    document.getElementById("blue").value / 100.0,
-    (100 - document.getElementById("alpha").value) / 100.0,
-  ];
-
-  const sizeInput = document.getElementById("size").value / 20.0;
-  shapesList.push(new Shape(
-    mode,
-    color,
-    sizeInput,
+  shapesList.push(new Triangle(
     [x, y],
-    document.getElementById("segments").value
   ));
 }
 
