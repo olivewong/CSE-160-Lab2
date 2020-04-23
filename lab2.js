@@ -1,5 +1,4 @@
-// Lab 1
-// Heavily borrowed from text
+// Lab 2: Blocky Animal
 
 // Vertex shader program
 const VSHADER_SOURCE =
@@ -76,10 +75,9 @@ initVertexBuffer = (gl, vertices, a_Position) => {
   return vertexBuffer;
 }
 
-var shapesList = [];
-
+let shapesList = [];
 const {gl, canvas} = setUpWebGL();
-let {a_Position, u_FragColor} = connectVariablesToGLSL(gl);
+const {a_Position, u_FragColor} = connectVariablesToGLSL(gl);
 
 main = () => {
   //let vertexBuffer = initVertexBuffer(gl);
@@ -115,14 +113,9 @@ update = () => {
 
 renderAllShapes = (a_Position, u_FragColor, gl) => {
   // Clear <canvas>
-  try {
-    gl.clear(gl.COLOR_BUFFER_BIT);
-  } catch (e) {
-    debugger;
-  }
+  gl.clear(gl.COLOR_BUFFER_BIT);
   let u_modelMatrix = gl.getUniformLocation(gl.program, 'u_modelMatrix');
   
-  // todo make render method
   shapesList.forEach((s) => {
     initVertexBuffer(gl, s.vertices, a_Position);
     // Pass the color of a point to u_FragColor variable
