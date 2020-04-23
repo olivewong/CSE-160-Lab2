@@ -54,39 +54,42 @@ connectVariablesToGLSL = (gl) => {
   return {a_Position, u_FragColor}
 }
 
-initVertexBuffer = (gl, vertices, a_Position) => { 
-  // Create a buffer object
+initVertexBuffer = () => { 
+  // Create a WebGL buffer (array in GPU memory)
   let vertexBuffer = gl.createBuffer(); 
   if (!vertexBuffer) {
     throw 'Failed to create the buffer object';
   }
-  // Bind the ARRAY_BUFFER object to target (vertexBuffer)
+  // Bind buffer to a_Position attribute in the vertex shader
+  // First bind the ARRAY_BUFFER object to target (vertexBuffer)
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  
-  // Write date into the buffer object 
-  gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
+  // Get memory location of attribute a_Position (var in GPU memory)
   a_Position = gl.getAttribLocation(gl.program, 'a_Position');
-  
+
   // Assign the buffer object to a_Position variable 
-  gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+  // Size = 3 bc 3d
+  gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0);
+
   // Enable assignment to an attribute variable so vertex shader can access buffer obj
   gl.enableVertexAttribArray(a_Position);
+
   return vertexBuffer;
 }
 
 let shapesList = [];
 const {gl, canvas} = setUpWebGL();
-const {a_Position, u_FragColor} = connectVariablesToGLSL(gl);
+let {a_Position, u_FragColor} = connectVariablesToGLSL(gl);
+let u_modelMatrix = gl.getUniformLocation(gl.program, 'u_modelMatrix');
 
 main = () => {
-  //let vertexBuffer = initVertexBuffer(gl);
   shapesList = []
-  // Register function (event handler) to be called on a mouse press
-  canvas.onmousedown = (ev) => { 
-    click(ev, canvas);
-    renderAllShapes(a_Position, u_FragColor, gl);
-  };
+  let vertexBuffer = initVertexBuffer(gl);
+ 
+  shapesList.push(new Cube(
+    [0, 0, 0],
+  ));
+  renderAllShapes();
 
   // Clear <canvas>
   gl.clear(gl.COLOR_BUFFER_BIT);
@@ -111,38 +114,28 @@ update = () => {
   requestAnimationFrame(update);
 }
 
-renderAllShapes = (a_Position, u_FragColor, gl) => {
+draw = (shape) => {
+  // Davis has his attribute shit here but i think this is more efficient
+  // he also put this in theclass
+  // Right now only triangles I think
+  // Write date into the buffer object 
+  gl.bufferData(gl.ARRAY_BUFFER, shape.vertices, gl.STATIC_DRAW);
+
+  // Pass the color of a point to u_FragColor variable
+  gl.uniform4f(u_FragColor, ...shape.color);
+  gl.uniformMatrix4fv(u_modelMatrix, false, shape.modelMatrix.elements);
+  // Draw
+  gl.drawArrays(gl.TRIANGLES, 0, shape.vertices.length / 3);
+}
+
+renderAllShapes = () => {
   // Clear <canvas>
   gl.clear(gl.COLOR_BUFFER_BIT);
-  let u_modelMatrix = gl.getUniformLocation(gl.program, 'u_modelMatrix');
-  
+ 
   shapesList.forEach((s) => {
-    initVertexBuffer(gl, s.vertices, a_Position);
-    // Pass the color of a point to u_FragColor variable
-    gl.uniform4f(u_FragColor, ...s.color);
-    
     s.rotateZ(rotationZ);
     s.scale(0.5, 0.5, 0.5);
     s.translate(0.5, 0, 0);
-
-    gl.uniformMatrix4fv(u_modelMatrix, false, s.modelMatrix.elements);
-    // Draw
-    gl.drawArrays(gl.TRIANGLES, 0, s.vertices.length / 2);
+    s.render();
   })
 }
-
-click = (ev, canvas) => {
-  // All points have to be saved bc the color buffer clears everything
-  // So must be re-rendered every mouse click
-  let x = ev.clientX; // x coordinate of a mouse pointer
-  let y = ev.clientY; // y coordinate of a mouse pointer
-  let rect = ev.target.getBoundingClientRect();
-
-  x = ((x - rect.left) - canvas.width / 2) / (canvas.width / 2);
-  y = (canvas.height / 2 - (y - rect.top)) / (canvas.height / 2);
-
-  shapesList.push(new Triangle(
-    [x, y],
-  ));
-}
-
