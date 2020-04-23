@@ -84,7 +84,7 @@ let u_modelMatrix = gl.getUniformLocation(gl.program, 'u_modelMatrix');
 
 main = () => {
   shapesList = []
-  let vertexBuffer = initVertexBuffer(gl);
+  initVertexBuffer(gl);
  
   shapesList.push(new Cube(
     [0, 0, 0],
@@ -112,20 +112,6 @@ update = () => {
   rotationZ += 1;
   renderAllShapes(a_Position, u_FragColor, gl);
   requestAnimationFrame(update);
-}
-
-draw = (shape) => {
-  // Davis has his attribute shit here but i think this is more efficient
-  // he also put this in theclass
-  // Right now only triangles I think
-  // Write date into the buffer object 
-  gl.bufferData(gl.ARRAY_BUFFER, shape.vertices, gl.STATIC_DRAW);
-
-  // Pass the color of a point to u_FragColor variable
-  gl.uniform4f(u_FragColor, ...shape.color);
-  gl.uniformMatrix4fv(u_modelMatrix, false, shape.modelMatrix.elements);
-  // Draw
-  gl.drawArrays(gl.TRIANGLES, 0, shape.vertices.length / 3);
 }
 
 renderAllShapes = () => {
