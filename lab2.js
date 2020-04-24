@@ -27,6 +27,7 @@ setUpWebGL = () => {
 
   // Specify the color for clearing <canvas>
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.enable(gl.DEPTH_TEST);
   return {gl, canvas};
 }
 
@@ -57,11 +58,19 @@ initVertexBuffer = () => {
   // Create a WebGL buffer (array in GPU memory)
   let vertexBuffer = gl.createBuffer(); 
   if (!vertexBuffer) {
-    throw 'Failed to create the buffer object';
+    throw 'Failed to create the vertex buffer object';
   }
   // Bind buffer to a_Position attribute in the vertex shader
   // First bind the ARRAY_BUFFER object to target (vertexBuffer)
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+  /*
+  // Create index buffer 
+  let indexBuffer = gl.createBuffer();
+  if (!indexBuffer) {
+    throw 'Failed to create the index buffer object';
+  }
+
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);*/
 
   // Get memory location of attribute a_Position (var in GPU memory)
   a_Position = gl.getAttribLocation(gl.program, 'a_Position');
@@ -90,7 +99,7 @@ main = () => {
   });
 
   renderAllShapes();
-  update(a_Position, u_FragColor, gl);
+  //update(a_Position, u_FragColor, gl);
 }
 
 clearCanvas = () => {
@@ -102,14 +111,24 @@ clearCanvas = () => {
   gl.clear(gl.COLOR_BUFFER_BIT);
   shapesList = [];
 }
-
+/*
 let rotationZ = 0;
 
 update = () => {
-  /*
   rotationZ += 1;
   renderAllShapes(a_Position, u_FragColor, gl);
-  requestAnimationFrame(update);*/
+  requestAnimationFrame(update);
+}*/
+
+inchesToGl = (inches, mode='scalar') => {
+  // Given a value in inches, approximates a webgl coordinates
+  // For scalar mode, output is 0.0 - 1.0
+  // For coordinates mode, output is -1.0 - 1.0
+  // Loaf is ~22 inches long
+  const screenLengthIn = 30.0;
+  if (inches > screenLengthIn) throw 'too long';
+  if (mode == 'scalar') return inches / screenLengthIn;
+  else if (mode == 'coordinates') return ((2 * inches) / (screenLengthIn) - 1.0); //test 
 }
 
 renderAllShapes = () => {
@@ -118,22 +137,51 @@ renderAllShapes = () => {
   // Pass the matrix to u_GlobalRotateMatrix attribute
   
   let globalRotationMatrix = new Matrix4().rotate(g_GlobalAngle, 0, 1, 0);
+  //globalRotationMatrix.rotate(-5, 1, 0, 0); // arbitrary, just for perspective
   gl.uniformMatrix4fv(u_GlobalRotateMatrix, false, globalRotationMatrix.elements);
 
   // Clear <canvas>
   gl.clear(gl.COLOR_BUFFER_BIT);
 
-  let body = new Cube(color='white');
-  body.translate(-.25, -.5, 0);
-  body.scale(0.5, 1, 0.5)
+  // Loaf body 
+  let body = new Cube(color='loaf white');
+  body.translate(0.2, 0.0, 0.0);
+  body.scale(
+    inchesToGl(16), // long
+    inchesToGl(5.5),  // tall
+    inchesToGl(7) // wide
+  ) 
   body.render();
+  /*
 
+  // Left arm
   let leftArm = new Cube(color='hot pink');
   leftArm.translate(.7, 0, 0);
   leftArm.rotateZ(45);
-  leftArm.scale(0.25, .7, .5);
-  leftArm.render();
+  leftArm.scale(0.25, .9, .5);
+  leftArm.render();*/
  
+  // Head
+  let head = new Cube(color='soft ginger');
+  head.translate(-0.45, 0.1, 0.0);
+  head.scale(
+    inchesToGl(4), 
+    inchesToGl(4), 
+    inchesToGl(4),
+  );
+  head.render();
+
+  // Legs
+  let leg = new Cube(color='loaf white');
+  leg.translate(-0.2, -0.2, -0.2);
+  leg.scale(
+    inchesToGl(1.5), 
+    inchesToGl(6), 
+    inchesToGl(1.6),
+  );
+  leg.render();
+
+   //head.rotateZ(25);
   /*
   shapesList.forEach((s) => {
     s.rotateZ(rotationZ);
