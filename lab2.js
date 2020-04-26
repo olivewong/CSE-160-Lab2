@@ -89,6 +89,7 @@ let shapesList = [];
 const {gl, canvas} = setUpWebGL();
 let {a_Position, u_FragColor, u_ModelMatrix, u_GlobalRotateMatrix} = connectVariablesToGLSL(gl);
 let g_GlobalAngle = document.getElementById('angleSlider').value;
+let g_ThighAngle = document.getElementById('thighSlider').value;
 let g_KneeAngle = document.getElementById('kneeSlider').value;
 main = () => {
   initVertexBuffer(gl);
@@ -97,10 +98,15 @@ main = () => {
     g_GlobalAngle = e.target.value;
     renderAllShapes();
   });
+  document.getElementById('thighSlider').addEventListener('mouseup', (e) => {
+    g_ThighAngle = parseFloat(e.target.value);
+    renderAllShapes();
+  });
   document.getElementById('kneeSlider').addEventListener('mouseup', (e) => {
     g_KneeAngle = parseFloat(e.target.value);
     renderAllShapes();
   });
+
 
   renderAllShapes();
   //update(a_Position, u_FragColor, gl);
@@ -167,20 +173,18 @@ renderAllShapes = () => {
   head.render();
 
   let kneeCoordMat = new Matrix4();
-  kneeCoordMat.rotate(g_KneeAngle, 0, 0, 1);
+  kneeCoordMat.translate(-0.2, -0.25, -0.2);
+  kneeCoordMat.rotate(g_ThighAngle, 0, 0, 1);
 
   // Thigh
   let thigh = new Cube(color='loaf white');
-  
-  thigh.modelMatrix.translate(-0.2, -0.25, -0.2);
+  thigh.modelMatrix = new Matrix4(kneeCoordMat);
   thigh.modelMatrix.scale(
     inchesToGl(1.5), 
     inchesToGl(3), 
     inchesToGl(1.5),
   );
-  thigh.modelMatrix.multiply(kneeCoordMat);
-
-
+  //thigh.modelMatrix.multiply(kneeCoordMat);
   thigh.render();
   
 
@@ -188,28 +192,28 @@ renderAllShapes = () => {
   // todo fix z fighting by changing z to like -.001
   let calf = new Cube(color='soft ginger');
   calf.modelMatrix = new Matrix4(kneeCoordMat);
-  calf.modelMatrix.translate(-0.2, -0.35, -0.2);
+  calf.modelMatrix.translate(0, -0.15, -0.001);
+  calf.modelMatrix.rotate(g_KneeAngle, 0, 0, 1);
   calf.modelMatrix.scale(
     inchesToGl(1.5), 
     inchesToGl(3), 
     inchesToGl(1.5),
   );
-  //calf.modelMatrix.rotate(g_KneeAngle, 0, 0, 1);
+  
   calf.render();
-  //debugger;
-
 /*
+
    // Foot
    let foot = new Cube(color='loaf white');
-   foot.translate(-0.2, -0.4, -0.2);
-   foot.scale(
-     inchesToGl(1.5), 
-     inchesToGl(2), 
-     inchesToGl(1.6),
-   );
-   //foot.rotateZ(g_KneeAngle / 2);
-   foot.render();
-*/
+   foot.modelMatrix = new Matrix4(kneeCoordMat);
+   foot.modelMatrix.translate(-0.0, -0.3, 0);
+   foot.modelMatrix.scale(
+    inchesToGl(1.5), 
+    inchesToGl(3), 
+    inchesToGl(1.5),
+  );
+   foot.render();*/
+
  
 
    //head.rotateZ(25);
