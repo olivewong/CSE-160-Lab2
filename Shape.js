@@ -1,34 +1,9 @@
 class Shape { 
-  constructor(vertices, color='hot pink') {
+  constructor(vertices, color='hot pink', shapeToCopy=undefined) {
     this.rgba = colors[color];
     this.vertices = vertices;
-
-    // Model matrix stores all the scale/translation/rotation transformations
-    this.translationMatrix = new Matrix4();
-    this.rotationMatrix = new Matrix4();
-    this.scaleMatrix = new Matrix4();
+    this.modelMatrix = new Matrix4();
   }
-
-  get modelMatrix() {
-    // M = Translate x Rotate x Scale
-    // goes to u model matrix
-    // these actually happen in reverse (right multiply) so its S, then R, then T
-    let M = new Matrix4();
-    M.multiply(this.translationMatrix);
-    M.multiply(this.rotationMatrix);
-    M.multiply(this.scaleMatrix);
-    return M;
-  }
-
-  translate(x, y, z) { this.translationMatrix.setTranslate(x, y, z); }
-
-  scale(x, y, z) { this.scaleMatrix.setScale(x, y, z); }
-
-  rotateX(angle) { this.rotationMatrix.setRotate(angle, 1, 0, 0); }
-
-  rotateY(angle) { this.rotationMatrix.setRotate(angle, 0, 1, 0); }
-
-  rotateZ(angle) { this.rotationMatrix.setRotate(angle, 0, 0, 1); }
 
   render(vertices=this.vertices, rgbaMult=1.0) {
     // TODO drop shadow w depth texture
@@ -48,8 +23,10 @@ class Shape {
     );
 
     gl.uniformMatrix4fv(u_ModelMatrix, false, this.modelMatrix.elements);
+
     // Draw
     gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 3);
+    
   }
 }
 
@@ -61,9 +38,9 @@ class Triangle extends Shape {
 };
 
 class Cube extends Shape {
-  constructor(color='hot pink') {
+  constructor(color='hot pink', shapeToCopy=undefined) {
     let vertices = new Float32Array(shapeTypes['cube']);
-    super(vertices, color=color);
+    super(vertices, color=color, shapeToCopy=shapeToCopy);
   }
   render() {
     // 9 coords per triangle, 18 per square
