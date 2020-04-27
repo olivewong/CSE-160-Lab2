@@ -144,6 +144,9 @@ inchesToGl = (inches, mode='scalar') => {
 renderAllShapes = () => {
   let startTime = performance.now();
 
+  console.log("Knee: " + g_KneeAngle);
+  console.log("Thigh: " + g_ThighAngle);
+
   // Pass the matrix to u_GlobalRotateMatrix attribute
   let globalRotationMatrix = new Matrix4().rotate(g_GlobalAngle, 0, 1, 0);
   //globalRotationMatrix.rotate(-5, 1, 0, 0); // arbitrary, just for perspective
@@ -154,17 +157,17 @@ renderAllShapes = () => {
 
   // Loaf body 
   let body = new Cube(color='loaf white');
-  body.modelMatrix.translate(0.2, 0.0, 0.0);
+ // body.modelMatrix.translate(0.1, 0.0, 0.0);
   body.modelMatrix.scale(
     inchesToGl(16), // long
     inchesToGl(5.5),  // tall
     inchesToGl(7) // wide
   ) 
-  body.render();
+   body.render();
  
   // Head
   let head = new Cube(color='soft ginger');
-  head.modelMatrix.translate(-0.45, 0.1, 0.0);
+  head.modelMatrix.translate(-0.6, 0.1, 0.0);
   head.modelMatrix.scale(
     inchesToGl(4), 
     inchesToGl(4), 
@@ -172,49 +175,80 @@ renderAllShapes = () => {
   );
   head.render();
 
-  let kneeCoordMat = new Matrix4();
-  kneeCoordMat.translate(-0.2, -0.25, -0.2);
-  kneeCoordMat.rotate(g_ThighAngle, 0, 0, 1);
+  let legBones = []
 
-  // Thigh
-  let thigh = new Cube(color='loaf white');
-  thigh.modelMatrix = new Matrix4(kneeCoordMat);
-  thigh.modelMatrix.scale(
+  for (leg = 0; leg < 4; leg++) {
+    // 4 legs
+    // Make thigh, knee for each
+    // Thigh
+
+    const foreHind = leg < 2 ? 'fore': 'hind';
+    const LR = leg % 2 == 0 ? 'left': 'right';
+
+    const thighHeight = inchesToGl(3);
+    let thigh = new Cube(color='loaf white');
+    thigh.modelMatrix.translate( // move her
+      foreHind == 'fore' ? -0.35 : 0.35, 
+      -inchesToGl(3), 
+      LR == 'left' ? 0.2 : -0.2
+    ) 
+    thigh.modelMatrix.rotate(g_ThighAngle, 0, 0, 1);
+    let kneeCoordMat = new Matrix4(thigh.modelMatrix);
+    //thigh.modelMatrix = new Matrix4(kneeCoordMat);
+    thigh.modelMatrix.scale(
+      inchesToGl(1.5), 
+      inchesToGl(2), 
+      inchesToGl(1.5),
+    );
+    //thigh.modelMatrix.translate(0, -1, 0) // change origin
+    legBones.push(thigh)
+
+    // Calf
+    // todo fix z fighting by changing z to like -.001
+    let calf = new Cube(color='soft ginger');
+    calf.modelMatrix = kneeCoordMat;
+    calf.modelMatrix.translate(0, -inchesToGl(3), -0.001); // move her
+    calf.modelMatrix.rotate(g_KneeAngle, 0, 0, 1);
+    let carpusCoordMat = new Matrix4(calf.modelMatrix);
+    calf.modelMatrix.scale(
+      inchesToGl(1.5), 
+      inchesToGl(2), 
+      inchesToGl(1.5),
+    );
+    //calf.modelMatrix.translate(0, -1, 0) // change origin
+    legBones.push(calf)
+
+   // metatarsal
+   let metatarsal = new Cube();
+   metatarsal.modelMatrix = carpusCoordMat;
+   metatarsal.modelMatrix.translate(0, -inchesToGl(3.5), 0);
+   let ankleCoordMat = new Matrix4(metatarsal.modelMatrix);
+   metatarsal.modelMatrix.scale(
     inchesToGl(1.5), 
-    inchesToGl(3), 
+    inchesToGl(1), 
     inchesToGl(1.5),
   );
-  //thigh.modelMatrix.multiply(kneeCoordMat);
-  thigh.render();
-  
+  //metatarsal.modelMatrix.translate(0, -1, 0) // change origin
+  legBones.push(metatarsal);
 
-  // Calf
-  // todo fix z fighting by changing z to like -.001
-  let calf = new Cube(color='soft ginger');
-  calf.modelMatrix = new Matrix4(kneeCoordMat);
-  calf.modelMatrix.translate(0, -0.15, -0.001);
-  calf.modelMatrix.rotate(g_KneeAngle, 0, 0, 1);
-  calf.modelMatrix.scale(
-    inchesToGl(1.5), 
-    inchesToGl(3), 
-    inchesToGl(1.5),
+  // Foot
+  let foot = new Cube('loaf white');
+  foot.modelMatrix = ankleCoordMat;
+  foot.modelMatrix.translate(0, -inchesToGl(1.5), 0.0);
+  foot.modelMatrix.scale(
+  inchesToGl(1.5), 
+  inchesToGl(1), 
+  inchesToGl(1.5),
   );
-  
-  calf.render();
-/*
+  //foot.modelMatrix.translate(0, -1, 0) // change origin
+  legBones.push(foot);
 
-   // Foot
-   let foot = new Cube(color='loaf white');
-   foot.modelMatrix = new Matrix4(kneeCoordMat);
-   foot.modelMatrix.translate(-0.0, -0.3, 0);
-   foot.modelMatrix.scale(
-    inchesToGl(1.5), 
-    inchesToGl(3), 
-    inchesToGl(1.5),
-  );
-   foot.render();*/
-
- 
+}
+legBones.map( (leg) => {
+  leg.modelMatrix.translate(0, -1, 0) // change origin
+  leg.render();
+});
+}
 
    //head.rotateZ(25);
   /*
@@ -224,4 +258,3 @@ renderAllShapes = () => {
     s.translate(0.5, 0, 0);
     s.render();
   })*/
-}
