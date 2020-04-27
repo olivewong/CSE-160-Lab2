@@ -88,9 +88,16 @@ initVertexBuffer = () => {
 let shapesList = [];
 const {gl, canvas} = setUpWebGL();
 let {a_Position, u_FragColor, u_ModelMatrix, u_GlobalRotateMatrix} = connectVariablesToGLSL(gl);
+
+
 let g_GlobalAngle = document.getElementById('angleSlider').value;
-let g_ThighAngle = document.getElementById('thighSlider').value;
-let g_KneeAngle = document.getElementById('kneeSlider').value;
+
+let jointAngles = {
+  'thigh': document.getElementById('thighSlider').value,
+  'knee': document.getElementById('kneeSlider').value,
+  'ankle': document.getElementById('ankleSlider').value,
+  'metacarpus': document.getElementById('metacarpusSlider').value,
+}
 main = () => {
   initVertexBuffer(gl);
 
@@ -99,17 +106,23 @@ main = () => {
     renderAllShapes();
   });
   document.getElementById('thighSlider').addEventListener('mouseup', (e) => {
-    g_ThighAngle = parseFloat(e.target.value);
+    jointAngles['thigh'] = parseFloat(e.target.value);
     renderAllShapes();
   });
   document.getElementById('kneeSlider').addEventListener('mouseup', (e) => {
-    g_KneeAngle = parseFloat(e.target.value);
+    jointAngles['knee'] = parseFloat(e.target.value);
+    renderAllShapes();
+  });
+  document.getElementById('ankleSlider').addEventListener('mouseup', (e) => {
+    jointAngles['ankle'] = parseFloat(e.target.value);
+    renderAllShapes();
+  });
+  document.getElementById('metacarpusSlider').addEventListener('mouseup', (e) => {
+    jointAngles['metacarpus'] = parseFloat(e.target.value);
     renderAllShapes();
   });
 
-
   renderAllShapes();
-  //update(a_Position, u_FragColor, gl);
 }
 
 clearCanvas = () => {
@@ -144,8 +157,9 @@ inchesToGl = (inches, mode='scalar') => {
 renderAllShapes = () => {
   let startTime = performance.now();
 
-  console.log("Knee: " + g_KneeAngle);
-  console.log("Thigh: " + g_ThighAngle);
+  console.log("Knee: " + jointAngles['knee']);
+  console.log("Thigh: " + jointAngles['thigh']);
+  console.log("Ankle: " + jointAngles['ankle']);
 
   // Pass the matrix to u_GlobalRotateMatrix attribute
   let globalRotationMatrix = new Matrix4().rotate(g_GlobalAngle, 0, 1, 0);
@@ -185,22 +199,19 @@ renderAllShapes = () => {
     const foreHind = leg < 2 ? 'fore': 'hind';
     const LR = leg % 2 == 0 ? 'left': 'right';
 
-    const thighHeight = inchesToGl(3);
     let thigh = new Cube(color='loaf white');
     thigh.modelMatrix.translate( // move her
       foreHind == 'fore' ? -0.35 : 0.35, 
       -inchesToGl(3), 
       LR == 'left' ? 0.2 : -0.2
     ) 
-    thigh.modelMatrix.rotate(g_ThighAngle, 0, 0, 1);
+    thigh.modelMatrix.rotate(jointAngles['thigh'], 0, 0, 1);
     let kneeCoordMat = new Matrix4(thigh.modelMatrix);
-    //thigh.modelMatrix = new Matrix4(kneeCoordMat);
     thigh.modelMatrix.scale(
       inchesToGl(1.5), 
       inchesToGl(2), 
       inchesToGl(1.5),
     );
-    //thigh.modelMatrix.translate(0, -1, 0) // change origin
     legBones.push(thigh)
 
     // Calf
@@ -208,39 +219,39 @@ renderAllShapes = () => {
     let calf = new Cube(color='soft ginger');
     calf.modelMatrix = kneeCoordMat;
     calf.modelMatrix.translate(0, -inchesToGl(3), -0.001); // move her
-    calf.modelMatrix.rotate(g_KneeAngle, 0, 0, 1);
+    calf.modelMatrix.rotate(jointAngles['knee'], 0, 0, 1);
     let carpusCoordMat = new Matrix4(calf.modelMatrix);
     calf.modelMatrix.scale(
       inchesToGl(1.5), 
       inchesToGl(2), 
       inchesToGl(1.5),
     );
-    //calf.modelMatrix.translate(0, -1, 0) // change origin
     legBones.push(calf)
 
    // metatarsal
    let metatarsal = new Cube();
    metatarsal.modelMatrix = carpusCoordMat;
    metatarsal.modelMatrix.translate(0, -inchesToGl(3.5), 0);
+   metatarsal.modelMatrix.rotate(jointAngles['ankle'], 0, 0, 1);
    let ankleCoordMat = new Matrix4(metatarsal.modelMatrix);
    metatarsal.modelMatrix.scale(
     inchesToGl(1.5), 
     inchesToGl(1), 
     inchesToGl(1.5),
   );
-  //metatarsal.modelMatrix.translate(0, -1, 0) // change origin
   legBones.push(metatarsal);
 
   // Foot
   let foot = new Cube('loaf white');
+ 
   foot.modelMatrix = ankleCoordMat;
-  foot.modelMatrix.translate(0, -inchesToGl(1.5), 0.0);
+  foot.modelMatrix.translate(0, -inchesToGl(1.5), 0);
+  foot.modelMatrix.rotate(jointAngles['metacarpus'], 0, 0, 1);
   foot.modelMatrix.scale(
   inchesToGl(1.5), 
   inchesToGl(1), 
   inchesToGl(1.5),
   );
-  //foot.modelMatrix.translate(0, -1, 0) // change origin
   legBones.push(foot);
 
 }
