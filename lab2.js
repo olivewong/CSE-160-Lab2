@@ -88,41 +88,95 @@ initVertexBuffer = () => {
 let shapesList = [];
 const {gl, canvas} = setUpWebGL();
 let {a_Position, u_FragColor, u_ModelMatrix, u_GlobalRotateMatrix} = connectVariablesToGLSL(gl);
-
-
+let animate = false;
 let g_GlobalAngle = document.getElementById('angleSlider').value;
+let startTime = performance.now();
 
-let jointAngles = {
-  'thigh': document.getElementById('thighSlider').value,
-  'knee': document.getElementById('kneeSlider').value,
-  'ankle': document.getElementById('ankleSlider').value,
-  'metacarpus': document.getElementById('metacarpusSlider').value,
+
+let jointAnglesAnimation = {
+  // thigh, knee, ankle, metacarpus
+  'foreL': [
+    [27, -39, 0, 11], [32, -13, -39, 20], [41, -4, -19, 8], [48, -6, -7, 8],
+    [52, -24, 29, -6], [52, -16, 29, 17], [52, -48, 30, 17], [52, -83, 82, 17],
+    [27, -83, 68, 40], [13, -52, 57, 24], [-5, -71, 20, 24], [-11, -56, 44, 8],
+    [0, -34, 3, 36]
+   ],
+  'foreR': [
+    [27, -39, 0, 11], [32, -13, -39, 20], [41, -4, -19, 8], [48, -6, -7, 8],
+    [52, -24, 29, -6], [52, -16, 29, 17], [52, -48, 30, 17], [52, -83, 82, 17],
+    [27, -83, 68, 40], [13, -52, 57, 24], [-5, -71, 20, 24], [-11, -56, 44, 8],
+    [0, -34, 3, 36]
+   ],
+  'hindL': [
+    [18, 21, 28, 0], [23, 17, 28, 0],  [39, 35, 12, 0], [37, 26, 25, -5],
+    [35, 18, 30, -5], [35, 6, 40, 0], [35, -14, 41, 12], [35, -32, 46, 26],
+    [32, -57, 8, 33], [25, -69, 39, 33], [23, -78, 39, 33], [23, -80, 25, 27], 
+    [23, 4, 20, 16]
+  ],
+  'hindR': [
+    [23, 4, 20, 16], [18, 21, 28, 0], [23, 17, 28, 0],  [39, 35, 12, 0], [37, 26, 25, -5],
+    [35, 18, 30, -5], [35, 6, 40, 0], [37, -14, 41, 12], [40, -32, 46, 26],
+    [32, -57, 8, 33], [25, -69, 39, 33], [23, -78, 39, 33], [23, -80, 25, 27], 
+  ],
 }
+let jointAngles = {
+  // thigh, knee, ankle, metacarpus
+  'foreL': [],
+  'foreR': [],
+  'hindL': [],
+  'hindR': []
+}
+
+
+toggleAnimation = () => {
+  animate = !animate;
+  // If turned on animation, start calling tick function
+  if (animate) {
+    startTime = performance.now();
+    tick();
+  }
+}
+
+tick = () => {
+  renderAllShapes();
+  if (animate) {
+    updateJointAnglesByAnimation();
+    requestAnimationFrame(tick);
+  }
+}
+
+updateJointAnglesByAnimation = () => {
+  const numFrames = 13;
+  const theTime = parseInt((performance.now() - startTime) / 100); // the divisor slows it down 
+  const frame = theTime % numFrames;
+  for (const [legName, val] of Object.entries(jointAngles)) {
+    jointAngles[legName] = jointAnglesAnimation[legName][frame];
+  }
+
+}
+
+updateJointAnglesByInput = (joint=undefined, slider=undefined) => {
+  // update using the sliders, rather than animating them
+  for (const [legName, val] of Object.entries(jointAngles)) {
+    // Update each leg
+    if (joint) jointAngles[legName][joint] = parseInt(document.getElementById(slider).value);
+    // Update each joint
+    else jointAngles[legName] = [
+      parseInt(document.getElementById('thighSlider').value),
+      parseInt(document.getElementById('kneeSlider').value),
+      parseInt(document.getElementById('ankleSlider').value),
+      parseInt(document.getElementById('metacarpusSlider').value)
+    ]
+  }
+  renderAllShapes();
+}
+
 main = () => {
   initVertexBuffer(gl);
-
-  document.getElementById('angleSlider').addEventListener('mouseup', (e) => {
+  document.getElementById('angleSlider').addEventListener('input', (e) => {
     g_GlobalAngle = e.target.value;
-    renderAllShapes();
   });
-  document.getElementById('thighSlider').addEventListener('mouseup', (e) => {
-    jointAngles['thigh'] = parseFloat(e.target.value);
-    renderAllShapes();
-  });
-  document.getElementById('kneeSlider').addEventListener('mouseup', (e) => {
-    jointAngles['knee'] = parseFloat(e.target.value);
-    renderAllShapes();
-  });
-  document.getElementById('ankleSlider').addEventListener('mouseup', (e) => {
-    jointAngles['ankle'] = parseFloat(e.target.value);
-    renderAllShapes();
-  });
-  document.getElementById('metacarpusSlider').addEventListener('mouseup', (e) => {
-    jointAngles['metacarpus'] = parseFloat(e.target.value);
-    renderAllShapes();
-  });
-
-  renderAllShapes();
+  updateJointAnglesByInput();
 }
 
 clearCanvas = () => {
@@ -155,11 +209,9 @@ inchesToGl = (inches, mode='scalar') => {
 }
 
 renderAllShapes = () => {
-  let startTime = performance.now();
+  //console.log("----")
+  console.log(jointAngles['hindL']);
 
-  console.log("Knee: " + jointAngles['knee']);
-  console.log("Thigh: " + jointAngles['thigh']);
-  console.log("Ankle: " + jointAngles['ankle']);
 
   // Pass the matrix to u_GlobalRotateMatrix attribute
   let globalRotationMatrix = new Matrix4().rotate(g_GlobalAngle, 0, 1, 0);
@@ -183,43 +235,55 @@ renderAllShapes = () => {
   let head = new Cube(color='soft ginger');
   head.modelMatrix.translate(-0.6, 0.1, 0.0);
   head.modelMatrix.scale(
-    inchesToGl(4), 
+    inchesToGl(3), 
     inchesToGl(4), 
     inchesToGl(4),
   );
   head.render();
-
+/*
+  let headCoordMat = new Matrix4(thigh.modelMatrix);
+  let head = new Cube(color='soft ginger');
+  head.modelMatrix.translate(-0.6, 0.1, 0.0);
+  head.modelMatrix.scale(
+    inchesToGl(3), 
+    inchesToGl(4), 
+    inchesToGl(4),
+  );
+  head.render();
+*/
   let legBones = []
 
-  for (leg = 0; leg < 4; leg++) {
+  for (l = 0; l < 4; l++) {
     // 4 legs
     // Make thigh, knee for each
     // Thigh
 
-    const foreHind = leg < 2 ? 'fore': 'hind';
-    const LR = leg % 2 == 0 ? 'left': 'right';
+    const foreHind = l < 2 ? 'fore': 'hind';
+    const LR = l % 2 == 0 ? 'L': 'R';
+    let leg = foreHind + LR;
+    //debugger;
 
-    let thigh = new Cube(color='loaf white');
+    let thigh = new Cube('loaf white');
     thigh.modelMatrix.translate( // move her
       foreHind == 'fore' ? -0.35 : 0.35, 
-      -inchesToGl(3), 
-      LR == 'left' ? 0.2 : -0.2
+      -inchesToGl(2), 
+      LR == 'L' ? 0.2 : -0.2
     ) 
-    thigh.modelMatrix.rotate(jointAngles['thigh'], 0, 0, 1);
+    thigh.modelMatrix.rotate(jointAngles[leg][0], 0, 0, 1);
     let kneeCoordMat = new Matrix4(thigh.modelMatrix);
     thigh.modelMatrix.scale(
-      inchesToGl(1.5), 
-      inchesToGl(2), 
+      inchesToGl(1.7), 
+      inchesToGl(3), 
       inchesToGl(1.5),
     );
     legBones.push(thigh)
 
     // Calf
     // todo fix z fighting by changing z to like -.001
-    let calf = new Cube(color='soft ginger');
+    let calf = new Cube(color='loaf white');
     calf.modelMatrix = kneeCoordMat;
-    calf.modelMatrix.translate(0, -inchesToGl(3), -0.001); // move her
-    calf.modelMatrix.rotate(jointAngles['knee'], 0, 0, 1);
+    calf.modelMatrix.translate(0, -inchesToGl(4.5), -0.001); // move her
+    calf.modelMatrix.rotate(jointAngles[leg][1], 0, 0, 1);
     let carpusCoordMat = new Matrix4(calf.modelMatrix);
     calf.modelMatrix.scale(
       inchesToGl(1.5), 
@@ -229,28 +293,27 @@ renderAllShapes = () => {
     legBones.push(calf)
 
    // metatarsal
-   let metatarsal = new Cube();
+   let metatarsal = new Cube('loaf darker');
    metatarsal.modelMatrix = carpusCoordMat;
    metatarsal.modelMatrix.translate(0, -inchesToGl(3.5), 0);
-   metatarsal.modelMatrix.rotate(jointAngles['ankle'], 0, 0, 1);
+   metatarsal.modelMatrix.rotate(jointAngles[leg][2], 0, 0, 1);
    let ankleCoordMat = new Matrix4(metatarsal.modelMatrix);
    metatarsal.modelMatrix.scale(
     inchesToGl(1.5), 
-    inchesToGl(1), 
+    inchesToGl(1.2), 
     inchesToGl(1.5),
   );
   legBones.push(metatarsal);
 
   // Foot
-  let foot = new Cube('loaf white');
- 
+  let foot = new Cube('soft ginger');
   foot.modelMatrix = ankleCoordMat;
-  foot.modelMatrix.translate(0, -inchesToGl(1.5), 0);
-  foot.modelMatrix.rotate(jointAngles['metacarpus'], 0, 0, 1);
+  foot.modelMatrix.translate(-inchesToGl(0.3), -inchesToGl(1.7), -0.001);
+  foot.modelMatrix.rotate(jointAngles[leg][3], 0, 0, 1);
   foot.modelMatrix.scale(
-  inchesToGl(1.5), 
-  inchesToGl(1), 
-  inchesToGl(1.5),
+    inchesToGl(1.8), 
+    inchesToGl(0.7), 
+    inchesToGl(1.5),
   );
   legBones.push(foot);
 

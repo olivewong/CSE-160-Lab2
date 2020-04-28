@@ -4,6 +4,8 @@ const colors = { // rgba
   'white':      [1.0, 1.0, 1.0, 1],
   'blue':       [0.2, 0.1, 0.9, 1],
   'loaf white': [1.0, 0.93, 0.90, 1],
+  'loaf darker': [0.99, 0.90, 0.87, 1],
+  'softer ginger': [0.86, 0.61, 0.47, 0.8],
   'soft ginger': [0.86, 0.61, 0.47, 1],
 }
 
@@ -20,7 +22,7 @@ const shapeTypes = {
     0, 0, 0, // Triangle 2
     0, 1, 0,
     1, 1, 0
-  ]'cube': [
+  ],'cube': [
     // Right face
     1, -1, 1,  1, -1, -1,  1, 1, -1, // Triangle 1
     1, -1, 1,  1, 1, -1,  1, 1, 1, // Triangle 2

@@ -12,17 +12,22 @@
     <br />
     <button onclick="clearCanvas();">Clear Canvas</button>
     <br />
-    hey hey
+    Welcome To blocky loaf!
+    <br />
+    To turn on animation, click "toggle animation". When animation is off, you can use the sliders to control loaf's joints
     <br />
     Camera Angle <input type="range" min="-180" max="180" value="5" class="slider" id="angleSlider">
     <br />
-    Hip <input type="range" min="-180" max="75" value="0" class="slider" id="thighSlider">
+    Thigh <input type="range" onchange="updateJointAnglesByInput(0, 'thighSlider'); "min="-180" max="75" value="0" class="slider" id="thighSlider">
     <br />
-    Knee <input type="range" min="-180" max="180" value="0" class="slider" id="kneeSlider">
+    Knee <input type="range" onchange="updateJointAnglesByInput(1, 'kneeSlider');" min="-180" max="180" value="0" class="slider" id="kneeSlider">
     <br />
-    Ankle <input type="range" min="-180" max="180" value="0" class="slider" id="ankleSlider">
+    Ankle <input type="range" onchange="updateJointAnglesByInput(2, 'ankleSlider');" min="-180" max="180" value="0" class="slider" id="ankleSlider">
     <br />
-    Metacarpus <input type="range" min="-180" max="180" value="0" class="slider" id="metacarpusSlider">
+    Metacarpus <input type="range" onchange="updateJointAnglesByInput(3, 'metacarpusSlider');" min="-180" max="180" value="0" class="slider" id="metacarpusSlider">
+    <button onclick="toggleAnimation();" type="button">Toggle Animation</button> 
+    
+
     <script src="./lib/webgl-utils.js"></script>
     <script src="./lib/cuon-matrix-cse160.js"></script>
     <script src="./lib/webgl-debug.js"></script>
