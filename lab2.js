@@ -119,6 +119,8 @@ let jointAnglesAnimation = {
     [32, -57, 8, 33], [25, -69, 39, 33], [23, -78, 39, 33], [23, -80, 25, 27], 
   ],
 }
+
+
 let jointAngles = {
   // thigh, knee, ankle, metacarpus
   'foreL': [],
@@ -175,6 +177,7 @@ main = () => {
   initVertexBuffer(gl);
   document.getElementById('angleSlider').addEventListener('input', (e) => {
     g_GlobalAngle = e.target.value;
+    renderAllShapes();
   });
   updateJointAnglesByInput();
 }
@@ -209,10 +212,6 @@ inchesToGl = (inches, mode='scalar') => {
 }
 
 renderAllShapes = () => {
-  //console.log("----")
-  console.log(jointAngles['hindL']);
-
-
   // Pass the matrix to u_GlobalRotateMatrix attribute
   let globalRotationMatrix = new Matrix4().rotate(g_GlobalAngle, 0, 1, 0);
   //globalRotationMatrix.rotate(-5, 1, 0, 0); // arbitrary, just for perspective
@@ -232,24 +231,41 @@ renderAllShapes = () => {
    body.render();
  
   // Head
-  let head = new Cube(color='soft ginger');
+  let head = new Cube(color='loaf white');
   head.modelMatrix.translate(-0.6, 0.1, 0.0);
   head.modelMatrix.scale(
     inchesToGl(3), 
-    inchesToGl(4), 
-    inchesToGl(4),
+    inchesToGl(3), 
+    inchesToGl(3),
   );
   head.render();
+  let headCoordMat2 = new Matrix4(head.modelMatrix);
+
+  // Snoot
+  let headCoordMat = new Matrix4(head.modelMatrix);
+  let snoot = new Cube('soft ginger');
+  snoot.modelMatrix = headCoordMat;
+  snoot.modelMatrix.translate(-0.8, -0.3, 0.0);
+  snoot.modelMatrix.rotate(10, 0, 0, 1);
+  snoot.modelMatrix.scale(
+    1, 
+    0.5, 
+    0.5,
+  );
+  snoot.modelMatrix.rotate(10, 0, 0, 1);
+  snoot.render();
 /*
-  let headCoordMat = new Matrix4(thigh.modelMatrix);
-  let head = new Cube(color='soft ginger');
-  head.modelMatrix.translate(-0.6, 0.1, 0.0);
-  head.modelMatrix.scale(
-    inchesToGl(3), 
-    inchesToGl(4), 
-    inchesToGl(4),
+  // Snoot
+  let nose = new Cube('nose brown');
+  nose.modelMatrix = headCoordMat2;
+  nose.modelMatrix.translate(-0.1, 0.5, 0.0);
+  nose.modelMatrix.scale(
+    1, 
+    0.25, 
+    0.25,
   );
-  head.render();
+  nose.modelMatrix.rotate(90, 0, 1, 0);
+  nose.render();
 */
   let legBones = []
 

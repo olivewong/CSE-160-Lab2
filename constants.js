@@ -1,12 +1,16 @@
 
 const colors = { // rgba
-  'hot pink':   [0.9, 0.0, 0.5, 1],
+  'hot pink':   [1, 0.7, 0.7, 1],
+  'lavender':     [0.94, 0.74, 1, 1],
+  'indiger': [0.75, 0.74, 0.9, 1],
+  'yellow':     [1, 0.6, 0.19, 1],
   'white':      [1.0, 1.0, 1.0, 1],
   'blue':       [0.2, 0.1, 0.9, 1],
   'loaf white': [1.0, 0.93, 0.90, 1],
-  'loaf darker': [0.99, 0.90, 0.87, 1],
+  'loaf darker': [0.98, 0.88, 0.86, 1],
   'softer ginger': [0.86, 0.61, 0.47, 0.8],
   'soft ginger': [0.86, 0.61, 0.47, 1],
+  'nose brown': [0.37, 0.22, 0.07, 1 ]
 }
 
 const shapeTypes = {
