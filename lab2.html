@@ -9,12 +9,14 @@
     <canvas id="webgl" width="400" height="400">
       Please use a browser that supports "canvas"
     </canvas>
+    <img src="loaf.png" width="400"  alt="loaf">
     <br />
     <button onclick="clearCanvas();">Clear Canvas</button>
+
+    <h2> welcome to b l o c k y l o a f !</h2>
+    <s> i'm so sorry loaf </s>
     <br />
-    Welcome To blocky loaf!
-    <br />
-    To turn on animation, click "toggle animation". When animation is off, you can use the sliders to control loaf's joints
+    To make loaf swim, click "toggle animation". When animation is off, you can use the sliders to control loaf's joints
     <br />
     Camera Angle <input type="range" min="-180" max="180" value="5" class="slider" id="angleSlider">
     <br />
@@ -26,7 +28,6 @@
     <br />
     Metacarpus <input type="range" onchange="updateJointAnglesByInput(3, 'metacarpusSlider');" min="-180" max="180" value="0" class="slider" id="metacarpusSlider">
     <button onclick="toggleAnimation();" type="button">Toggle Animation</button> 
-    <img src="loaf.png" alt="loaf">
 
     
     <script src="./lib/webgl-utils.js"></script>

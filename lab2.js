@@ -63,14 +63,6 @@ initVertexBuffer = () => {
   // Bind buffer to a_Position attribute in the vertex shader
   // First bind the ARRAY_BUFFER object to target (vertexBuffer)
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  /*
-  // Create index buffer 
-  let indexBuffer = gl.createBuffer();
-  if (!indexBuffer) {
-    throw 'Failed to create the index buffer object';
-  }
-
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);*/
 
   // Get memory location of attribute a_Position (var in GPU memory)
   a_Position = gl.getAttribLocation(gl.program, 'a_Position');
@@ -191,14 +183,6 @@ clearCanvas = () => {
   gl.clear(gl.COLOR_BUFFER_BIT);
   shapesList = [];
 }
-/*
-let rotationZ = 0;
-
-update = () => {
-  rotationZ += 1;
-  renderAllShapes(a_Position, u_FragColor, gl);
-  requestAnimationFrame(update);
-}*/
 
 inchesToGl = (inches, mode='scalar') => {
   // Given a value in inches, approximates a webgl coordinates
@@ -254,31 +238,16 @@ renderAllShapes = () => {
   );
   snoot.modelMatrix.rotate(10, 0, 0, 1);
   snoot.render();
-/*
-  // Snoot
-  let nose = new Cube('nose brown');
-  nose.modelMatrix = headCoordMat2;
-  nose.modelMatrix.translate(-0.1, 0.5, 0.0);
-  nose.modelMatrix.scale(
-    1, 
-    0.25, 
-    0.25,
-  );
-  nose.modelMatrix.rotate(90, 0, 1, 0);
-  nose.render();
-*/
   let legBones = []
 
   for (l = 0; l < 4; l++) {
     // 4 legs
     // Make thigh, knee for each
-    // Thigh
-
     const foreHind = l < 2 ? 'fore': 'hind';
     const LR = l % 2 == 0 ? 'L': 'R';
     let leg = foreHind + LR;
-    //debugger;
 
+    // Thigh
     let thigh = new Cube('loaf white');
     thigh.modelMatrix.translate( // move her
       foreHind == 'fore' ? -0.35 : 0.35, 
@@ -339,12 +308,3 @@ legBones.map( (leg) => {
   leg.render();
 });
 }
-
-   //head.rotateZ(25);
-  /*
-  shapesList.forEach((s) => {
-    s.rotateZ(rotationZ);
-    s.scale(0.5, 0.5, 0.5);
-    s.translate(0.5, 0, 0);
-    s.render();
-  })*/
